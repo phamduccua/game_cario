@@ -1,0 +1,369 @@
+:root {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #1f2937;
+  background-color: transparent;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
+  background: #ffffff;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+a {
+  font-weight: 500;
+  color: #ff6b6b;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #e63946;
+}
+
+h1 {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+/* Community header styles: center text and make title black */
+.community-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px 0;
+}
+
+.community-header-card {
+  background: #fff7e6;
+  padding: 12px;
+  border-radius: 12px;
+  width: 100%;
+}
+
+.community-title {
+  color: #000000; /* black */
+}
+
+.community-description {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-top: 8px;
+}
+
+.group-header-card {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: #fff7e6;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  margin-bottom: 12px;
+}
+
+/* Ensure header card is the positioning context for absolute controls */
+.group-header-card {
+  position: relative;
+}
+
+.group-header-card .group-avatar img {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.group-header-card .group-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.group-header-card .group-description {
+  margin: 4px 0 0 0;
+  color: #6b7280;
+}
+
+.create-post-card {
+  background: #fff7e6;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.post-title-input, .post-content-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+/* Titles inside search and create-post cards */
+.search-card-title,
+.create-post-title {
+  margin: 0 0 20px 0; /* 20px bottom spacing */
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.create-post-card .post-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+button {
+  border-radius: 12px;
+  border: 1px solid transparent;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  background-color: #ff6b6b;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: #e63946;
+  transform: translateY(-2px);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid #ff6b6b;
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: 1rem;
+  color: #1f2937;
+  resize: none;
+}
+
+input::placeholder {
+  color: #9ca3af;
+}
+
+/* Search input with left icon */
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-wrapper .search-icon {
+  position: absolute;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 36px; /* leave space for icon */
+  width: 100%;
+}
+
+/* Post menu (three-dot) */
+.post-menu-container {
+  position: relative;
+}
+
+.post-menu-button {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: #111827; /* black-ish */
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.post-menu-button:focus,
+.post-menu-button:focus-visible {
+  outline: 2px solid rgba(17,24,39,0.12); /* subtle outline */
+  outline-offset: 2px;
+}
+
+/* Group header small three-dot button */
+.group-header-menu-button {
+  background: transparent;
+  border: 1px solid rgba(17,24,39,0.06);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: #111827;
+}
+
+.group-header-menu-button:focus,
+.group-header-menu-button:focus-visible {
+  outline: 2px solid rgba(17,24,39,0.12); /* subtle, not red */
+  outline-offset: 2px;
+}
+
+.group-header-menu-button {
+  z-index: 80;
+}
+
+/* Per-group item menu button */
+.group-item-menu-button {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.9);
+  color: #000000;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 90; /* ensure button is above badges */
+}
+.group-item-menu-button:focus,
+.group-item-menu-button:focus-visible {
+  outline: 2px solid rgba(17,24,39,0.12);
+  outline-offset: 2px;
+}
+
+.post-menu {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px; /* ✅ Nhỏ hơn */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* ✅ Nhẹ hơn */
+  z-index: 120; /* ensure menu floats above badges and other elements */
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* ✅ Khoảng cách nhỏ hơn */
+  padding: 4px; /* ✅ Padding nhỏ hơn */
+  min-width: 100px; /* ✅ Rộng vừa đủ */
+}
+
+.post-menu .menu-item {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* ✅ Khoảng cách icon và chữ nhỏ hơn */
+  background: transparent;
+  border: none;
+  padding: 4px 6px; /* ✅ Padding nhỏ hơn */
+  cursor: pointer;
+  color: #111827;
+  font-size: 0.75rem; /* ✅ Chữ nhỏ hơn */
+  width: 100%;
+  text-align: left;
+  white-space: nowrap; /* ✅ Quan trọng: không cho chữ xuống dòng */
+}
+
+.post-menu .menu-item-icon {
+  width: 12px; /* ✅ Icon nhỏ hơn */
+  height: 12px;
+  flex-shrink: 0; /* ✅ Không cho icon co lại */
+}
+
+.post-menu .menu-item-text {
+  white-space: nowrap; /* ✅ Không cho chữ xuống dòng */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-menu .menu-item:hover {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.menu-item-icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+.menu-item-text {
+  display: inline-block;
+  line-height: 1;
+}
+
+.post-edit-form .post-actions button {
+  margin-left: 8px;
+}
+
+/* Apply card background across community cards */
+.sidebar-search-section .search-input-wrapper,
+.group-card,
+.post-card,
+.create-post-card,
+.create-group-card,
+.modal-card .create-post-card {
+  background: #fff7e6;
+}
+
+/* Modal backdrop and card */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 24px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 720px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  padding: 18px;
+}
+
+/* Ensure modal internal card uses the create-post look */
+.modal-card .create-post-card {
+  padding: 12px;
+  background: transparent;
+}
