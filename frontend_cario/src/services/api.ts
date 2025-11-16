@@ -1,9 +1,9 @@
 import { LoginCredentials, RegisterCredentials, User, ApiResponse, LoginResponse, Question } from '@/types';
 
 const API_BASE_URL = 'http://localhost:8085';
-// const API_BASE_URL = 'https://gametientri-production.up.railway.app';
-const CHATBOT_API_URL = 'https://pivot-production.up.railway.app';
-const ANALYSIS_API_URL = 'https://apigeminiendpoint-production.up.railway.app';
+//const API_BASE_URL = 'https://cario.ai4life.com.vn/backend/cario/';
+const CHATBOT_API_URL = 'https://pivot-qg4z.onrender.com';
+const ANALYSIS_API_URL = 'https://pivot-hdps.vercel.app';
 
 // Community API endpoints
 export const COMMUNITY_API = {
@@ -514,6 +514,441 @@ class ApiService {
     }
   }
 
+  async getPostsByUser(username: string): Promise<ApiResponse<any[]>> {
+    try {
+      const url = `${API_BASE_URL}/api/posts/get/by-user?username=${username}`;
+      console.log('Getting posts by user:', username, 'from:', url);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('User posts loaded successfully:', data);
+        return {
+          success: true,
+          data: Array.isArray(data) ? data : (data.posts || data.data || []),
+        };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to load user posts:', errorData);
+        return {
+          success: false,
+          error: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('Get User Posts API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Không thể tải bài viết của người dùng',
+      };
+    }
+  }
+
+  // Comment API
+  async createComment(payload: { content: string; postId: number | string; parentId?: number | string }): Promise<ApiResponse<any>> {
+    try {
+      const url = `${API_BASE_URL}/api/comment/create`;
+      console.log('=== CREATE COMMENT REQUEST ===');
+      console.log('URL:', url);
+      console.log('Payload:', payload);
+      console.log('Username from localStorage:', localStorage.getItem('username'));
+      console.log('Role from localStorage:', localStorage.getItem('role'));
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      console.log('=== CREATE COMMENT RESPONSE ===');
+      console.log('Status:', response.status);
+      console.log('Status Text:', response.statusText);
+      console.log('Headers:', Object.fromEntries(response.headers.entries()));
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Comment created successfully:', data);
+        return { success: true, data };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('=== CREATE COMMENT ERROR ===');
+        console.error('Status:', response.status);
+        console.error('Error data:', errorData);
+        console.error('Full response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: errorData
+        });
+        return {
+          success: false,
+          error: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('Create Comment API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Không thể tạo bình luận',
+      };
+    }
+  }
+
+  async deleteComment(id: number | string): Promise<ApiResponse<any>> {
+    try {
+      const url = `${API_BASE_URL}/api/comment/delete/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json' },
+        mode: 'cors',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.message || errorData.error || 'Xóa bình luận thất bại' };
+      }
+      const data = await response.json().catch(() => ({}));
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Không thể xóa bình luận' };
+    }
+  }
+
+  async getCommentsByPost(postId: number | string): Promise<ApiResponse<any[]>> {
+    try {
+      const url = `${API_BASE_URL}/api/comment/get/by-posts/${postId}`;
+      console.log('Getting comments for post:', postId, 'from:', url);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Comments loaded successfully:', data);
+        return {
+          success: true,
+          data: Array.isArray(data) ? data : (data.comments || data.data || []),
+        };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to load comments:', errorData);
+        return {
+          success: false,
+          error: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('Get Comments API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Không thể tải bình luận',
+      };
+    }
+  }
+
+  // Like API
+  async toggleLike(postId: number | string): Promise<ApiResponse<any>> {
+    try {
+      const url = `${API_BASE_URL}/api/like`;
+      console.log('Toggling like for post:', postId, 'at:', url);
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify({ postId }),
+      });
+
+      if (response.ok) {
+        // Check if response has content before parsing JSON
+        const contentType = response.headers.get('content-type');
+        const text = await response.text();
+        
+        if (text && text.trim() && contentType?.includes('application/json')) {
+          const data = JSON.parse(text);
+          console.log('Like toggled successfully:', data);
+          return { success: true, data };
+        } else {
+          // Backend returned empty or non-JSON response, treat as success
+          console.log('Like toggled successfully (no response body)');
+          return { success: true, data: {} };
+        }
+      } else {
+        const text = await response.text();
+        let errorData = {};
+        try {
+          errorData = text ? JSON.parse(text) : {};
+        } catch (e) {
+          console.warn('Error response is not JSON:', text);
+        }
+        console.error('Failed to toggle like:', errorData);
+        return {
+          success: false,
+          error: (errorData as any).message || (errorData as any).error || `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('Toggle Like API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Không thể thích/bỏ thích bài viết',
+      };
+    }
+  }
+
+  // Group CRUD API
+  async createGroup(payload: { name: string; description: string; isPrivate: boolean }): Promise<ApiResponse<any>> {
+    try {
+      const url = `${API_BASE_URL}/group/create`;
+      console.log('Creating group at:', url, 'with payload:', payload);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Group created successfully:', data);
+        return { success: true, data };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to create group:', errorData);
+        return {
+          success: false,
+          error: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('Create Group API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Không thể tạo nhóm',
+      };
+    }
+  }
+
+  async updateGroup(payload: { id: number | string; name?: string; description?: string; isPrivate?: boolean; status?: string }): Promise<ApiResponse<any>> {
+    try {
+      const url = `${API_BASE_URL}/group/update-status`;
+      console.log('Updating group at:', url, 'with payload:', payload);
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Group updated successfully:', data);
+        return { success: true, data };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to update group:', errorData);
+        return {
+          success: false,
+          error: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('Update Group API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Không thể cập nhật nhóm',
+      };
+    }
+  }
+
+  async deleteGroup(id: number | string): Promise<ApiResponse<any>> {
+    try {
+      const url = `${API_BASE_URL}/group/delete/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json' },
+        mode: 'cors',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.message || errorData.error || 'Xóa nhóm thất bại' };
+      }
+      const data = await response.json().catch(() => ({}));
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Không thể xóa nhóm' };
+    }
+  }
+
+  // Group Member API
+  async joinGroup(groupId: number | string): Promise<ApiResponse<any>> {
+    try {
+      const url = `${API_BASE_URL}/api/group-member/join/${groupId}`;
+      console.log('Joining group:', groupId, 'at:', url);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        console.log('Joined group successfully:', data);
+        return { success: true, data };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to join group:', errorData);
+        return {
+          success: false,
+          error: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('Join Group API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Không thể tham gia nhóm',
+      };
+    }
+  }
+
+  async updateMemberRole(payload: { id: number | string; role: string }): Promise<ApiResponse<any>> {
+    try {
+      const url = `${API_BASE_URL}/api/group-member/update`;
+      console.log('Updating member role at:', url, 'with payload:', payload);
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Member role updated successfully:', data);
+        return { success: true, data };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to update member role:', errorData);
+        return {
+          success: false,
+          error: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('Update Member Role API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Không thể cập nhật vai trò thành viên',
+      };
+    }
+  }
+
+  async removeMember(id: number | string): Promise<ApiResponse<any>> {
+    try {
+      const url = `${API_BASE_URL}/api/group-member/delete/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json' },
+        mode: 'cors',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return { success: false, error: errorData.message || errorData.error || 'Xóa thành viên thất bại' };
+      }
+      const data = await response.json().catch(() => ({}));
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Không thể xóa thành viên' };
+    }
+  }
+
+  async getGroupMembers(groupId: number | string): Promise<ApiResponse<any[]>> {
+    try {
+      const url = `${API_BASE_URL}/api/group-member/get?groupId=${groupId}`;
+      console.log('Getting members for group:', groupId, 'from:', url);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Group members loaded successfully:', data);
+        return {
+          success: true,
+          data: Array.isArray(data) ? data : (data.members || data.data || []),
+        };
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to load group members:', errorData);
+        return {
+          success: false,
+          error: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    } catch (error) {
+      console.error('Get Group Members API Error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Không thể tải danh sách thành viên',
+      };
+    }
+  }
+
   // Test connection to server
   async testConnection(): Promise<boolean> {
     try {
@@ -749,6 +1184,8 @@ class ApiService {
         password: credentials.password,
         email: credentials.email
       };
+      
+      console.log('Register data:', registerData);
       
       const response = await fetch(url, {
         method: 'POST',

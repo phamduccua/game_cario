@@ -38,7 +38,7 @@ public class WebSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of("https://gametientri-production.up.railway.app",
+        config.setAllowedOriginPatterns(List.of("https://cario.ai4life.com.vn",
                 "https://cario-production.up.railway.app",
                 "http://localhost:5005", "http://localhost:5173"));
         config.setAllowedHeaders(List.of("*"));

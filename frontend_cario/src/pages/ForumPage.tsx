@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '@/services/api';
+import { CommentSection } from '@/components/CommentSection';
 
 interface Post {
   id: string;
@@ -56,6 +57,7 @@ export const ForumPage: React.FC = () => {
   const [editPostTitle, setEditPostTitle] = useState('');
   const [editPostContent, setEditPostContent] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showCommentsForPost, setShowCommentsForPost] = useState<string | null>(null);
 
   // Load posts từ API khi component mount
   useEffect(() => {
@@ -113,16 +115,38 @@ export const ForumPage: React.FC = () => {
     }
   };
 
-  const handleLike = (postId: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
+  const handleLike = async (postId: string) => {
+    // Optimistic update
+    setPosts(posts.map(post =>
+      post.id === postId
         ? { ...post, likes: post.isLiked ? post.likes - 1 : post.likes + 1, isLiked: !post.isLiked }
         : post
     ));
+
+    try {
+      const result = await apiService.toggleLike(postId);
+      if (!result.success) {
+        // Revert on error
+        setPosts(posts.map(post =>
+          post.id === postId
+            ? { ...post, likes: post.isLiked ? post.likes + 1 : post.likes - 1, isLiked: !post.isLiked }
+            : post
+        ));
+        setError(result.error || 'Không thể thích/bỏ thích bài viết');
+      }
+    } catch (err) {
+      // Revert on error
+      setPosts(posts.map(post =>
+        post.id === postId
+          ? { ...post, likes: post.isLiked ? post.likes + 1 : post.likes - 1, isLiked: !post.isLiked }
+          : post
+      ));
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
+    }
   };
 
   const handleComment = (postId: string) => {
-    alert(`Mở bình luận cho bài viết ${postId}`);
+    setShowCommentsForPost(showCommentsForPost === postId ? null : postId);
   };
 
   const handleShare = (postId: string) => {
@@ -382,23 +406,23 @@ export const ForumPage: React.FC = () => {
                 </div>
                 
                 <div className="post-actions">
-                  <button 
+                  <button
                     className={`action-btn ${post.isLiked ? 'liked' : ''}`}
                     onClick={() => handleLike(post.id)}
                   >
                     <span className="action-icon">❤️</span>
                     <span className="action-count">{post.likes}</span>
                   </button>
-                  
-                  <button 
-                    className="action-btn"
+
+                  <button
+                    className={`action-btn ${showCommentsForPost === post.id ? 'active' : ''}`}
                     onClick={() => handleComment(post.id)}
                   >
                     <span className="action-icon">💬</span>
                     <span className="action-count">{post.comments}</span>
                   </button>
-                  
-                  <button 
+
+                  <button
                     className="action-btn"
                     onClick={() => handleShare(post.id)}
                   >
@@ -406,6 +430,18 @@ export const ForumPage: React.FC = () => {
                     <span className="action-count">{post.shares}</span>
                   </button>
                 </div>
+
+                {/* Comment Section */}
+                {showCommentsForPost === post.id && (
+                  <CommentSection
+                    postId={post.id}
+                    onCommentCountChange={(count) => {
+                      setPosts(posts.map(p =>
+                        p.id === post.id ? { ...p, comments: count } : p
+                      ));
+                    }}
+                  />
+                )}
               </div>
             ))}
           </div>

@@ -72,7 +72,11 @@ export const GroupList: React.FC<GroupListProps> = ({ groups, isLoading, onReloa
   // groups guaranteed non-empty here; render list below
 
   const renderRoleLabel = (role: string | null) => {
-    if (!role) return '';
+    if (!role) return null;
+    const roleLower = String(role).toLowerCase();
+    // Don't show label for guests/non-members
+    if (roleLower === 'guest' || roleLower === 'none') return null;
+    
     return String(role).charAt(0).toUpperCase() + String(role).slice(1);
   };
 
@@ -86,18 +90,61 @@ export const GroupList: React.FC<GroupListProps> = ({ groups, isLoading, onReloa
             key={group.id}
             className={`group-item ${selectedGroup?.id === group.id ? 'selected' : ''}`}
             onClick={() => setSelectedGroup(group)}
-            style={{ position: 'relative' }}
+            style={{ position: 'relative', padding: '14px 12px' }}
           >
-            <div className="group-header">
-              {group.isPrivate && <LockIcon className="group-icon" />}
-              <h3 className="group-name">{group.name}</h3>
-              <span className={`group-role ${group.userRole}`}>
-                {renderRoleLabel(group.userRole)}
-              </span>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              {/* Group Avatar */}
+              <div style={{
+                width: 48,
+                height: 48,
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '1.3rem',
+                fontWeight: 700,
+                flexShrink: 0,
+              }}>
+                {group.name.charAt(0).toUpperCase()}
+              </div>
+
+              {/* Group Info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="group-header" style={{ marginBottom: 4 }}>
+                  {group.isPrivate && <LockIcon className="group-icon" />}
+                  <h3 className="group-name" style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{group.name}</h3>
+                  {renderRoleLabel(group.userRole) && (
+                    <span className={`group-role ${group.userRole}`} style={{ marginLeft: 8 }}>
+                      {renderRoleLabel(group.userRole)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Group Description */}
+                {group.description && (
+                  <p style={{
+                    margin: '4px 0',
+                    fontSize: '0.85rem',
+                    color: '#6b7280',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {group.description}
+                  </p>
+                )}
+
+                {/* Member Count */}
+                <p className="group-meta" style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#9ca3af' }}>
+                  👥 {group.countUserJoin || 0} thành viên
+                </p>
+              </div>
             </div>
 
             {isOwner && (
-              <div style={{ position: 'absolute', right: 10, top: 8, zIndex: 80 }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ position: 'absolute', right: 10, top: 12, zIndex: 80 }} onClick={(e) => e.stopPropagation()}>
                 <button
                   className="group-item-menu-button"
                   onClick={() => setOpenMenuFor(openMenuFor === group.id ? null : group.id)}
@@ -121,10 +168,6 @@ export const GroupList: React.FC<GroupListProps> = ({ groups, isLoading, onReloa
                 )}
               </div>
             )}
-
-            <p className="group-meta">
-              {group.description && <span>{group.description}</span>}
-            </p>
 
             {deleteGroupTarget && (
               <div className="modal-backdrop" role="dialog" aria-modal="true">

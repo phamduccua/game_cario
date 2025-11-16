@@ -10,20 +10,27 @@ export const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (!email || !username || !password) {
+
+    if (!email || !username || !password || !confirmPassword) {
       setError('Vui lòng nhập đầy đủ thông tin.');
       return;
     }
 
+    if (password !== confirmPassword) {
+      setError('Mật khẩu và xác nhận mật khẩu không khớp.');
+      return;
+    }
+
     const result = await register({ email, username, password });
-    
+
     if (!result.success) {
       setError(result.error || 'Đăng ký thất bại. Vui lòng thử lại.');
     }
@@ -97,7 +104,29 @@ export const RegisterPage: React.FC = () => {
             </div>
           </div>
 
-
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Nhập lại mật khẩu</label>
+            <div className="input-wrapper">
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="Nhập lại mật khẩu của bạn"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className={error && !confirmPassword ? 'error' : ''}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={isLoading}
+              >
+                {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
+          </div>
 
           <button
             type="submit"

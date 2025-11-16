@@ -3,18 +3,20 @@ import { useCommunity } from '@/context/CommunityContext';
 import { PostsSkeleton } from './LoadingSkeletons';
 import { apiService } from '@/services/api';
 import { useState, useEffect, useRef } from 'react';
+import { CommentSection } from './CommentSection';
 
 interface GroupPostsProps {
   posts: Post[];
   isLoading: boolean;
   onReload?: (groupId: string | number) => Promise<void> | void;
+  isMember?: boolean; // User đã join nhóm chưa
 }
 
 function getInitials(username: string): string {
   return username.slice(0, 2).toUpperCase();
 }
 
-export const GroupPosts: React.FC<GroupPostsProps> = ({ posts, isLoading, onReload }) => {
+export const GroupPosts: React.FC<GroupPostsProps> = ({ posts, isLoading, onReload, isMember = false }) => {
   const { selectedGroup, error, setError } = useCommunity();
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
   const [openMenuFor, setOpenMenuFor] = useState<string | null>(null);
@@ -26,6 +28,7 @@ export const GroupPosts: React.FC<GroupPostsProps> = ({ posts, isLoading, onRelo
   const [deleteModalPost, setDeleteModalPost] = useState<Post | null>(null);
   const [hasMounted, setHasMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [showCommentsForPost, setShowCommentsForPost] = useState<string | null>(null);
 
 
   // Ensure hooks are called in the same order on every render.
@@ -108,8 +111,12 @@ export const GroupPosts: React.FC<GroupPostsProps> = ({ posts, isLoading, onRelo
     return (
       <div className="empty-state">
         <p>Chưa có bài viết nào trong nhóm này</p>
-  {(selectedGroup as any).countUserJoin > 0 && (
+        {/* Chỉ hiển thị hint nếu user đã là member hoặc owner */}
+        {isMember && (
           <p className="hint">Hãy là người đầu tiên tạo bài viết!</p>
+        )}
+        {!isMember && (
+          <p className="hint" style={{ color: '#9ca3af' }}>Tham gia nhóm để xem và tạo bài viết</p>
         )}
       </div>
     );
@@ -216,6 +223,40 @@ export const GroupPosts: React.FC<GroupPostsProps> = ({ posts, isLoading, onRelo
     }
   };
 
+  const handleLike = async (postId: string) => {
+    // Optimistic update
+    setLocalPosts(prev => prev.map(post =>
+      post.id === postId
+        ? { ...post, countLike: post.userIsLike ? post.countLike - 1 : post.countLike + 1, userIsLike: !post.userIsLike }
+        : post
+    ));
+
+    try {
+      const result = await apiService.toggleLike(postId);
+      if (!result.success) {
+        // Revert on error
+        setLocalPosts(prev => prev.map(post =>
+          post.id === postId
+            ? { ...post, countLike: post.userIsLike ? post.countLike + 1 : post.countLike - 1, userIsLike: !post.userIsLike }
+            : post
+        ));
+        setError(new Error(result.error || 'Không thể thích/bỏ thích bài viết'));
+      }
+    } catch (err) {
+      // Revert on error
+      setLocalPosts(prev => prev.map(post =>
+        post.id === postId
+          ? { ...post, countLike: post.userIsLike ? post.countLike + 1 : post.countLike - 1, userIsLike: !post.userIsLike }
+          : post
+      ));
+      setError(err instanceof Error ? err : new Error('Có lỗi xảy ra'));
+    }
+  };
+
+  const handleComment = (postId: string) => {
+    setShowCommentsForPost(showCommentsForPost === postId ? null : postId);
+  };
+
   // (removed duplicate effect) - outside-click handled in the combined effect above
 
   return (
@@ -315,15 +356,34 @@ export const GroupPosts: React.FC<GroupPostsProps> = ({ posts, isLoading, onRelo
           </div>
 
           <div className="post-actions">
-            <button className={`action-btn ${post.userIsLike ? 'liked' : ''}`} aria-pressed={post.userIsLike}>
+            <button
+              className={`action-btn ${post.userIsLike ? 'liked' : ''}`}
+              onClick={() => handleLike(post.id)}
+              aria-pressed={post.userIsLike}
+            >
               <span className="action-icon">❤️</span>
               <span className="action-count">{post.countLike}</span>
             </button>
-            <button className="action-btn">
+            <button
+              className={`action-btn ${showCommentsForPost === post.id ? 'active' : ''}`}
+              onClick={() => handleComment(post.id)}
+            >
               <span className="action-icon">💬</span>
               <span className="action-count">{post.countComment}</span>
             </button>
           </div>
+
+          {/* Comment Section */}
+          {showCommentsForPost === post.id && (
+            <CommentSection
+              postId={post.id}
+              onCommentCountChange={(count) => {
+                setLocalPosts(prev => prev.map(p =>
+                  p.id === post.id ? { ...p, countComment: count } : p
+                ));
+              }}
+            />
+          )}
         </div>
       ))}
       {/* Edit modal */}
